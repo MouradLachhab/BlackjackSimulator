@@ -1,1 +1,1 @@
-# LOG3430
+# Blackjack simulator to simulate thousands of game for different playstyles.
