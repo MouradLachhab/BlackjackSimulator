@@ -35,7 +35,6 @@ void Player::addCard(int card) {
 	if (hasAce_ && (currentHandSum_ + card > 21))
 	{
 		currentHandSum_ -= 10;
-		hasAce_ = false;
 	}
 	currentHandSum_ += card;
 	if (currentHandSum_ > 21)
@@ -70,12 +69,11 @@ void Player::check(int dealer) {
 int Player::play(int dealer) {
 	if (doubled_ || lost_)
 		return PASS;
-	else if (currentHandSum_ >= 17 && hasAce_)
-		return PASS;
-	else if (hasAce_)
-		return HIT;
 	else if (currentHandSum_ >= 17)
 		return PASS;
+	else if (hasAce_ && currentHandSum_ < 18)
+		return HIT;
+
 	else if ((currentHandSum_ == 10 || currentHandSum_ == 11) && dealer < 7 && dealer > 1 && (currentAmount_ >= 2*bet_)) {
 		doubled_ = true;
 		bet_ *= 2;
