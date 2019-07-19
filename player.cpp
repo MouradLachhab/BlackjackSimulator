@@ -5,12 +5,14 @@ Player::Player() : Player::Player(1) {
 }
 
 Player::Player(int type) {
-	
-
+	minBet_ = 10;
+	maxBet_ = 100;
+	totalWins_ = 0;
 	numberWinsRow_ = 0;
+	lastBet_ = 10;
 	bet_ = 10;
-	currentAmount_ = 20;
-	maximumAmount_ = 20;
+	currentAmount_ = 100;
+	maximumAmount_ = currentAmount_;
 	currentHandSum_ = 0;
 	hasAce_ = false;
 	doubled_ = false;
@@ -22,7 +24,7 @@ Player::~Player() {}
 
 void Player::addCard(int card) {
 
-	if (card == ACE && ( hasAce_ || (currentHandSum_ + 11 > 21))) {
+	if (card == ACE && (currentHandSum_ + 11 > 21)) {
 		card = 1;
 	}
 	else if (card == ACE) {
@@ -30,9 +32,11 @@ void Player::addCard(int card) {
 		hasAce_ = true;
 	}
 
-	if (hasAce_ &&  (currentHandSum_ + card > 21))
+	if (hasAce_ && (currentHandSum_ + card > 21))
+	{
 		currentHandSum_ -= 10;
-
+		hasAce_ = false;
+	}
 	currentHandSum_ += card;
 	if (currentHandSum_ > 21)
 		lost_ = true;
@@ -47,6 +51,7 @@ void Player::check(int dealer) {
 	if ((currentHandSum_ > dealer || dealer > 21) && !lost_ ) {
 		currentAmount_ += bet_;
 		numberWinsRow_++;
+		totalWins_++;
 	}
 	else if (currentHandSum_ < dealer || lost_) {
 		currentAmount_ -= bet_;
@@ -65,7 +70,7 @@ void Player::check(int dealer) {
 int Player::play(int dealer) {
 	if (doubled_ || lost_)
 		return PASS;
-	else if (currentHandSum_ >= 15 && hasAce_)
+	else if (currentHandSum_ >= 17 && hasAce_)
 		return PASS;
 	else if (hasAce_)
 		return HIT;
@@ -87,20 +92,43 @@ int Player::play(int dealer) {
 int Player::bet() {
 	if (currentAmount_ == 0)
 		return 0;
-	if (type_ == 1) {		// Adds on streaks, reset on loss
+
+	if (type_ == 1)
+	{		// Adds on streaks, reset on loss
 		if (numberWinsRow_ > 1)
-			return bet_ = lastBet_ += 10;
-		else {
-			bet_ = 10;
-			lastBet_ = 10;
+		{
+			if (lastBet_ > minBet_)
+				lastBet_ -= 5;
+
+			 bet_ = lastBet_;
 		}
+		else if (numberWinsRow_ == 1)
+		{
+			bet_ = lastBet_;
 		}
-	else if (type_ == 0) {} // Always bets the same
-	return bet_ = 10;;
+		else
+		{
+			if (lastBet_ < maxBet_)
+				lastBet_ += 5;
+
+			bet_ = lastBet_;
+		}
+	}
+	else if (type_ == 0)
+		// Always bets the same
+		bet_ = minBet_;
+
+	return bet_;
 }
 
 bool Player::isDead() {
-	return (currentAmount_ <= 0);
+	if (currentAmount_ <= 0)
+	{
+		// std::cout << " Player type " << type_ << " Died with a maximum of " << maximumAmount_ << std::endl;
+		return true;
+	}
+
+	return false;
 }
 
 int Player::getType() {
@@ -108,6 +136,9 @@ int Player::getType() {
 }
 int Player::getMaximumAmount() {
 	return maximumAmount_;
+}
+int Player::getTotalWins() {
+	return totalWins_;
 }
 
 int Player::getHand() {

@@ -4,6 +4,8 @@
 #define HIT 1
 #define PASS 0
 
+#include <iostream>
+
 class Player {
 
 public:
@@ -17,11 +19,15 @@ public:
 	virtual int bet();
 	bool isDead();
 	int getType();
+	int getTotalWins();
 	int getMaximumAmount();
 	int getHand();
 	int getCurrentAmount();
 	bool lost();
 protected:
+	int minBet_;
+	int maxBet_;
+	int totalWins_;
 	int lastBet_;
 	int type_;
 	int numberWinsRow_;

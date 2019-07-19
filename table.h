@@ -16,12 +16,14 @@ public:
 	void check();
 	void bet();
 	void playing();
-	void replacePlayers();
-	void getStats();
+	void replacePlayers(bool force);
+	void getStats(int nbRounds);
 	void debugWinners();
 	int getCard();
 
 protected:
+	int totalWinsType0;
+	int totalWinsType1;
 	int maximumPayoutType1;
 	int maximumPayoutType0;
 	int totalPayoutType1;

@@ -34,10 +34,12 @@ void Table::play(int nbRounds) {
 		// Play 1 turn
 		playing();
 
-		replacePlayers();
+		replacePlayers(false);
 	}
 
-	getStats();
+	replacePlayers(true);
+
+	getStats(nbRounds);
 }
 
 void Table::check() {
@@ -61,16 +63,18 @@ void Table::playing() {
 	dealer_.addCard(getCard());
 	dealer_.addCard(getCard());
 
-	for (unsigned i = 0; i < players_.size(); ++i) {
+	for (unsigned i = 0; i < players_.size(); ++i)
+	{
 		done_ = false;
 		do {
-			switch (players_[i].play(dealer_.showFirst())) {
-			case HIT:
-				players_[i].addCard(getCard());
-				break;
-			case PASS:
-				done_ = true;
-				break;
+			switch (players_[i].play(dealer_.showFirst()))
+			{
+				case HIT:
+					players_[i].addCard(getCard());
+					break;
+				case PASS:
+					done_ = true;
+					break;
 			}
 		} while (!done_);
 	}
@@ -86,21 +90,24 @@ void Table::playing() {
 		}
 	} while (!done_);
 	dealersHand_ = dealer_.check();
-	//debugWinners();
+	// debugWinners();
 	for (unsigned i = 0; i < players_.size(); ++i) {
 		players_[i].check(dealersHand_);
 	}
 }
 
-void Table::replacePlayers() {
+void Table::replacePlayers(bool force) {
 	for (unsigned i = 0; i < players_.size(); ++i) {
 		Player player = players_[i];
-		if (player.isDead()) {
+
+		if (player.isDead() || force) {
 			int payout = player.getMaximumAmount();
+			int totalWins = player.getTotalWins();
 			if (player.getType() == 1) {
 				if (payout > maximumPayoutType1)
 					maximumPayoutType1 = payout;
 				totalPayoutType1 += payout;
+				totalWinsType1 += totalWins;
 				totalPlayersType1++;
 				players_[i] = Player(1);
 				if (payout > 200)
@@ -110,6 +117,7 @@ void Table::replacePlayers() {
 				if (payout > maximumPayoutType0)
 					maximumPayoutType0 = payout;
 				totalPayoutType0 += payout;
+				totalWinsType0 += totalWins;
 				totalPlayersType0++;
 				players_[i] = Player(0);
 				if (payout > 200)
@@ -120,7 +128,7 @@ void Table::replacePlayers() {
 	}
 }
 
-void Table::getStats() {
+void Table::getStats(int nbRounds) {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	float moyenneType1 = 0;
@@ -154,6 +162,12 @@ void Table::getStats() {
 	SetConsoleTextAttribute(hConsole, 7);
 	std::cout << winners0_ << std::endl << std::endl << std::endl;
 
+	std::cout << "Win Percentage pour le type ";
+	SetConsoleTextAttribute(hConsole, 10);
+	std::cout << "Type 0: ";
+	SetConsoleTextAttribute(hConsole, 7);
+	std::cout << static_cast<float>(totalWinsType0) / (nbRounds * 3) << std::endl << std::endl << std::endl;
+
 
 	std::cout << "Nombre de Joueur de ";
 	SetConsoleTextAttribute(hConsole, 12);
@@ -178,6 +192,12 @@ void Table::getStats() {
 	std::cout << "Type 1: ";
 	SetConsoleTextAttribute(hConsole, 7);
 	std::cout << winners1_ << std::endl << std::endl << std::endl;
+
+	std::cout << "Win Percentage pour le type ";
+	SetConsoleTextAttribute(hConsole, 12);
+	std::cout << "Type 1: ";
+	SetConsoleTextAttribute(hConsole, 7);
+	std::cout << static_cast<float>(totalWinsType1) / (nbRounds * 3) << std::endl << std::endl << std::endl;
 }
 
 int Table::getCard() {
